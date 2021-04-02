@@ -1,3 +1,6 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.pythonPath": "word2csv\\Python\\WPy64-3910\\python-3.9.1.amd64\\python.exe",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
