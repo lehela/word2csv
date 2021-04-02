@@ -10,7 +10,7 @@ In your local folder, drag & drop one or more ".docx" files onto the "word2csv.b
 A command window opens and ask to confirm the output path for the converted CSV files (the chosen path will be remembered)
 The program will show a progress bar for each file while it is converted.
 
-## Developer Notes
+## Installation Notes
 
 The main program is written in Python and located in `word2csv\src`
 
