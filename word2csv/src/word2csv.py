@@ -338,7 +338,7 @@ def getOutputPath(argv):
     # Confirm Output Path
     done = False
     while done == False:
-        pathNew = input("\n\nPress return to accept default, or enter new path.\n\n[ {currPath} ]: ".format(currPath = path))
+        pathNew = input("\n\nPress return to accept default output location, or enter new path.\n\n[ {currPath} ]: ".format(currPath = path))
         if pathNew == "":
             done = True
         else:
