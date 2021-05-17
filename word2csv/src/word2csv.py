@@ -117,22 +117,25 @@ def getDocumentBody(zipf):
 
 def parseHeading(df: pd.DataFrame, row: dict, xmlNode, dStyles: dict) -> pd.DataFrame:
 
-    if row["tag"] != "p":
+    # Exit immediately if the row is not representing a paragraph, or the paragraph has no content
+    if row["tag"] != "p" or getText(xmlNode) == "":
         return df
 
-    # Style ID
+    # Fetch the paragraph's Style ID
     styleId = np.nan
     for styleNode in xmlNode.xpath(".//w:pStyle", namespaces=xmlNode.nsmap):
         styleId = styleNode.get(resolveNS("w:val", namespaces=xmlNode.nsmap),"")
     row["styleId"] = styleId
 
-    # Outline Level
+    # Fetch the Outline Level from the Style
     row["outlineLvl"] = dStyles.get(styleId, {"outlineLvl" : np.nan})["outlineLvl"]
 
-    # No Outline Level for Style? Return!
+    # If the Style has no Outline Level then exit
     if pd.isna( row["outlineLvl"] ):
         return df
 
+    # Main Parsing Logic
+    # ---------------------
     global dOutlineNumbers
 
     # Increase current level outline
@@ -148,6 +151,8 @@ def parseHeading(df: pd.DataFrame, row: dict, xmlNode, dStyles: dict) -> pd.Data
     # Generate Outline Reference
     refList = list(dOutlineNumbers.items())[0:int(row["outlineLvl"]) + 1]
     refText = ".".join(str(itm[1]) for itm in refList)
+
+    # Populate record attributes
     row["paraID"] = xmlNode.get(resolveNS("w14:paraId", namespaces=xmlNode.nsmap))
     row["ChapterOutline"] = refText
     row["ChapterName"] = getText(xmlNode)
@@ -155,8 +160,13 @@ def parseHeading(df: pd.DataFrame, row: dict, xmlNode, dStyles: dict) -> pd.Data
     row["Type"] = "Heading"
     row["Text"] = getText(xmlNode)
 
+    # Save row to dataframe
     df = df.append(row, ignore_index=True)
-
+    
+    # Check for Comments & Footnotes
+    df = parseComments(df, row, xmlNode)
+    df = parseFootnotes(df, row, xmlNode)
+    
     return df
 
 def parseComments(df: pd.DataFrame, row: dict, xmlNode) -> pd.DataFrame:
@@ -242,8 +252,16 @@ def parseFootnotes(df: pd.DataFrame, row: dict, xmlNode) -> pd.DataFrame:
 
 def parseParagraph(df: pd.DataFrame, row: dict, xmlNode) -> pd.DataFrame:
 
-    # Not a paragraph, or a heading already? Return
-    if row["tag"] != "p" or not(pd.isna(row["outlineLvl"])):
+    # If row not a paragraph, exit immediately 
+    if row["tag"] != "p":
+        return df
+
+    # If paragraph is empty, then exit immediately
+    if getText(xmlNode) == "":
+        return df
+
+    # If paragraph is already a header, then exit immediately
+    if not(pd.isna(row["outlineLvl"])):
         return df
 
     row["paraID"] = xmlNode.get(resolveNS("w14:paraId", namespaces=xmlNode.nsmap))
@@ -434,7 +452,9 @@ indent = "\t"
 
 os.system('cls' if os.name == 'nt' else 'clear')
 print(  
-    "\n"+indent+"Word2Csv Converter\n"+indent+"=================="
+    "\n"+indent+"Word2Csv Converter\n"+indent+"=================="+
+    "\n\n"+
+    "IMPORTANT: Word documents must have all tracked changes ACCEPTED, or else the conversion may fail.."
     )
 
 outPath = getOutputPath(sys.argv)
