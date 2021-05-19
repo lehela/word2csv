@@ -81,6 +81,30 @@ def getFootnotes(zipf):
 
     return dictFootnotes
 
+def getStyleOutlineLevelRecursively(xmlStyle, xmlStyles):
+    
+    # Get Outline Level from Style
+    try:
+            outlineLvl = xmlStyle.xpath(".//w:outlineLvl", namespaces=xmlStyle.nsmap)[0].get(resolveNS("w:val", namespaces=xmlStyles.nsmap))
+    except:
+            outlineLvl = np.nan
+
+    if not pd.isna(outlineLvl):
+        return outlineLvl
+
+    # Try to get Outline Levvel from the Style the current Style is based on
+    try:
+            BasedOnStyleID = xmlStyle.xpath(".//w:basedOn", namespaces=xmlStyle.nsmap)[0].get(resolveNS("w:val", namespaces=xmlStyles.nsmap))
+            xmlBasedOnStyle = xmlStyles.xpath("//w:style[@w:styleId='"+ BasedOnStyleID+"']", namespaces=xmlStyles.nsmap)[0]
+            outlineLvl = getStyleOutlineLevelRecursively(xmlBasedOnStyle, xmlStyles)
+    except:
+    # If that fails, return no Outline Level
+            outlineLvl = np.nan
+    
+    return outlineLvl
+
+
+
 def getStyles(zipf):
 
     dictStyles = {}
@@ -96,11 +120,9 @@ def getStyles(zipf):
    
         styleId = xmlStyle.get(resolveNS("w:styleId", namespaces=xmlStyle.nsmap))
         styleType = xmlStyle.get(resolveNS("w:type", namespaces=xmlStyle.nsmap))
-        
-        outlineLvl = np.nan
-        for xmloutlineLvl in xmlStyle.xpath(".//w:outlineLvl", namespaces=xmlStyle.nsmap):
-            outlineLvl = xmloutlineLvl.get(resolveNS("w:val", namespaces=xmlStyles.nsmap))
 
+        outlineLvl = getStyleOutlineLevelRecursively(xmlStyle, xmlStyles)
+        
         dictStyles[styleId] = {
             "Type" : styleType,
             "outlineLvl" : outlineLvl
@@ -113,7 +135,6 @@ def getDocumentBody(zipf):
     xmlDoc = etree.fromstring(raw)
     xmlDocBody = xmlDoc.xpath(".//w:body", namespaces=xmlDoc.nsmap)[0]
     return xmlDocBody
-
 
 def parseHeading(df: pd.DataFrame, row: dict, xmlNode, dStyles: dict) -> pd.DataFrame:
 

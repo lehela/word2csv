@@ -24,8 +24,8 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}\\word2csv\\src\\word2csv.py",
-            "args": ["${workspaceFolder}\\word2csv\\src\\Testing\\Test2.docx"],
-            // "args": ["C:\\Users\\lelange\\OneDrive - Deloitte (O365D)\\Documents\\NTUC\\4. System\\04. SAP FPS Subledger\\04_System Spec\\IFRS17 System Specification SAP FPSL - 20200429 v1.24.docx"],
+            // "args": ["${workspaceFolder}\\word2csv\\src\\Testing\\Test2.docx"],
+            "args": ["C:\\Users\\lelange\\OneDrive - Deloitte (O365D)\\Documents\\NTUC\\4. System\\04. SAP FPS Subledger\\04_System Spec\\IFRS17 System Specification SAP FPSL - 20200429 v1.25.docx"],
             "console": "integratedTerminal"
         }                
     ]
